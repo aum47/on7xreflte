@@ -13,14 +13,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
- 
+#include <string.h>
+
+/* Function prototypes */
+int update_crypto_hmac(const char *vmlinux_path, const char *hmac_path, unsigned long offset);
+int collect_crypto_bytes(const char *in_file, const char *section_name, unsigned long offset, 
+                         unsigned long size, const char *out_file);
+
 int main (int argc, char **argv)
 {
 	if (argc < 2)
 	{
 		printf ("\nUsage : \n");
-		printf ("fips_crypto_utils -u vmlinux_file hmac_file offset");
-		printf ("fips_crypto_utils -g vmlinux_file section_name offset size out_file");
+		printf ("fips_crypto_utils -u vmlinux_file hmac_file offset\n");
+		printf ("fips_crypto_utils -g vmlinux_file section_name offset size out_file\n");
 		printf ("\n");
 		return -1;
 	}
@@ -34,7 +40,7 @@ int main (int argc, char **argv)
 		if (argc != 5)
 		{
 			printf ("\nUsage : \n");
-			printf ("fips_crypto_utils -u vmlinux_file hmac_file offset");
+			printf ("fips_crypto_utils -u vmlinux_file hmac_file offset\n");
 			printf ("\n");
 			return -1;
 		}
@@ -45,7 +51,7 @@ int main (int argc, char **argv)
 		
 		if (!vmlinux_file || !hmac_file || !offset)
 		{
-			printf ("./fips_crypto_utils -u vmlinux_file hmac_file offset");
+			printf ("./fips_crypto_utils -u vmlinux_file hmac_file offset\n");
 			return -1;
 		}
 
@@ -62,7 +68,7 @@ int main (int argc, char **argv)
 		if (argc != 7)
 		{
 			printf ("\nUsage : \n");
-			printf ("./fips_crypto_utils -g vmlinux_file section_name offset size out_file");
+			printf ("./fips_crypto_utils -g vmlinux_file section_name offset size out_file\n");
 			printf ("\n");
 			return -1;
 		}
@@ -75,7 +81,7 @@ int main (int argc, char **argv)
 
 		if (!in_file || !section_name || !offset || !size || !out_file)
 		{
-			printf ("./fips_crypto_utils -g vmlinux_file section_name offset size out_file");
+			printf ("./fips_crypto_utils -g vmlinux_file section_name offset size out_file\n");
 			return -1;
 		}
 
@@ -84,8 +90,8 @@ int main (int argc, char **argv)
 	else
 	{
 		printf ("\nUsage : \n");
-		printf ("fips_crypto_utils -u vmlinux_file hmac_file offset");
-		printf ("fips_crypto_utils -g vmlinux_file section_name offset size out_file");
+		printf ("fips_crypto_utils -u vmlinux_file hmac_file offset\n");
+		printf ("fips_crypto_utils -g vmlinux_file section_name offset size out_file\n");
 		printf ("\n");
 	}
 
@@ -117,7 +123,7 @@ collect_crypto_bytes (const char * in_file, const char * section_name, unsigned 
 
 	if (!in_file || !section_name || !offset || !size || !out_file)
 	{
-		printf ("collect_crypto_bytes : Invalid arguments");
+		printf ("collect_crypto_bytes : Invalid arguments\n");
 		return -1;
 	}
 
@@ -126,13 +132,13 @@ collect_crypto_bytes (const char * in_file, const char * section_name, unsigned 
 	in_fp = fopen (in_file, "r");
 	if (!in_fp)
 	{
-		printf ("Unable to open file : %s", in_file);
+		printf ("Unable to open file : %s\n", in_file);
 		return -1;
 	}	
 
 	if (fseek (in_fp, offset, SEEK_SET) != 0 )
 	{
-		printf ("Unable to seek file : %s", in_file);
+		printf ("Unable to seek file : %s\n", in_file);
 		fclose (in_fp);
 		return -1;
 	}
@@ -140,7 +146,7 @@ collect_crypto_bytes (const char * in_file, const char * section_name, unsigned 
 	out_fp = fopen (out_file, "ab");
 	if (!out_fp)
 	{
-		printf ("Unable to open file : %s", out_file);
+		printf ("Unable to open file : %s\n", out_file);
 		fclose(in_fp);
 		return -1;
 	}	
@@ -149,7 +155,7 @@ collect_crypto_bytes (const char * in_file, const char * section_name, unsigned 
 	{
 		if ( 1 != fread (&data, sizeof(unsigned char), 1, in_fp))
 		{
-			printf ("Unable to read 1 byte from  file : %s", in_file);
+			printf ("Unable to read 1 byte from  file : %s\n", in_file);
 			fclose (in_fp);
 			fclose (out_fp);
 			return -1;
@@ -159,7 +165,7 @@ collect_crypto_bytes (const char * in_file, const char * section_name, unsigned 
 
 		if (1 != fwrite (&data, 1, 1, out_fp))
 		{
-			printf ("Unable to write 1 byte to file : %s", out_file);
+			printf ("Unable to write 1 byte to file : %s\n", out_file);
 			fclose (in_fp);
 			fclose (out_fp);
 			return -1;
@@ -194,14 +200,14 @@ update_crypto_hmac (const char * vmlinux_path, const char * hmac_path, unsigned 
 
 	if (!vmlinux_path || !hmac_path || !offset)
 	{
-		printf ("FIPS update_crypto_hmac : Invalid Params");
+		printf ("FIPS update_crypto_hmac : Invalid Params\n");
 		return -1;
 	}
 
 	vmlinux_fp  = fopen (vmlinux_path, "r+b");
 	if (!vmlinux_fp)
 	{
-		printf ("Unable to open vmlinux file ");
+		printf ("Unable to open vmlinux file\n");
 		return -1;
 	}	
 
@@ -209,14 +215,14 @@ update_crypto_hmac (const char * vmlinux_path, const char * hmac_path, unsigned 
 
 	if (!hmac_fp)
 	{
-		printf ("Unable to open hmac file ");
+		printf ("Unable to open hmac file\n");
 		fclose (vmlinux_fp);
 		return -1;
 	}	
 
 	if (SHA256_DIGEST_SIZE != fread (&hmac, sizeof(unsigned char), SHA256_DIGEST_SIZE, hmac_fp)) 
 	{
-		printf ("Unable to read %d bytes from hmac file", SHA256_DIGEST_SIZE);
+		printf ("Unable to read %d bytes from hmac file\n", SHA256_DIGEST_SIZE);
 		fclose (hmac_fp);
 		fclose (vmlinux_fp);
 		return -1;
@@ -228,12 +234,12 @@ update_crypto_hmac (const char * vmlinux_path, const char * hmac_path, unsigned 
 		printf ("%02x ", hmac[i]);
 	printf ("\n");
 
-	printf ("Offset : %ld", offset);
+	printf ("Offset : %ld\n", offset);
 #endif
 
 	if (fseek (vmlinux_fp, offset, SEEK_SET) != 0 )
 	{
-		printf ("Unable to seek into vmlinux file.");
+		printf ("Unable to seek into vmlinux file.\n");
 		fclose (hmac_fp);
 		fclose (vmlinux_fp);
 		return -1;
@@ -241,7 +247,7 @@ update_crypto_hmac (const char * vmlinux_path, const char * hmac_path, unsigned 
 
 	if (SHA256_DIGEST_SIZE !=  fwrite (hmac, sizeof(unsigned char), SHA256_DIGEST_SIZE, vmlinux_fp))
 	{
-		printf ("Unable to write %d byte into vmlinux", SHA256_DIGEST_SIZE);
+		printf ("Unable to write %d byte into vmlinux\n", SHA256_DIGEST_SIZE);
 		fclose (hmac_fp);
 		fclose (vmlinux_fp);
 		return -1;
